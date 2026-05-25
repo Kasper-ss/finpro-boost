@@ -1,7 +1,6 @@
-import { motion, type HTMLMotionProps } from 'framer-motion'
 import { cn } from '@/lib/utils'
 
-interface ButtonProps extends HTMLMotionProps<'button'> {
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'danger'
   size?: 'sm' | 'md' | 'lg'
   fullWidth?: boolean
@@ -30,11 +29,10 @@ export function Button({
   }
 
   return (
-    <motion.button
+    <button
       type={type}
-      whileTap={{ scale: disabled ? 1 : 0.97 }}
       className={cn(
-        'font-medium transition-opacity disabled:opacity-50',
+        'font-medium transition-opacity transition-transform active:scale-[0.97] disabled:opacity-50 disabled:active:scale-100',
         variants[variant],
         sizes[size],
         fullWidth && 'w-full',
@@ -44,6 +42,6 @@ export function Button({
       {...props}
     >
       {children}
-    </motion.button>
+    </button>
   )
 }
