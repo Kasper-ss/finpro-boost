@@ -11,6 +11,22 @@ export const INITIAL_FREE_FUNDS = 174_870
 export const MONTH_BALANCE_CHANGE = 12_450
 export const MONTH_BALANCE_CHANGE_PERCENT = 2.6
 
+export const EMPTY_FINANCES = {
+  balance: 0,
+  income: 0,
+  expenses: 0,
+  investmentsValue: 0,
+  freeFunds: 0,
+  monthBalanceChange: 0,
+} as const
+
+export const EMPTY_PRODUCTIVITY_STATS: ProductivityStats = {
+  completedToday: 0,
+  totalToday: 0,
+  financialImpactToday: 0,
+  streakDays: 0,
+}
+
 export const initialTransactions: Transaction[] = [
   { id: 't1', type: 'income', amount: 120000, category: 'salary', date: d(2), description: 'Зарплата — основная работа' },
   { id: 't2', type: 'expense', amount: 4500, category: 'food', date: d(0), description: 'Продукты в Перекрёстке' },

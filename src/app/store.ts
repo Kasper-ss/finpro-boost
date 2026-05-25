@@ -10,6 +10,7 @@ import type {
   TransactionCategory,
   TransactionType,
   ChatMessage,
+  FinancialSnapshot,
 } from '@/types'
 import {
   INITIAL_BALANCE,
@@ -21,18 +22,15 @@ import {
   initialTasks,
   initialInvestments,
   initialProductivityStats,
+  EMPTY_FINANCES,
+  EMPTY_PRODUCTIVITY_STATS,
 } from '@/lib/mockData'
 import { generateId, calcPortfolioValue } from '@/lib/utils'
 import { getTelegramUser } from '@/lib/telegram'
 
-interface AppState {
+interface AppState extends FinancialSnapshot {
   user: User | null
-  balance: number
-  income: number
-  expenses: number
-  investmentsValue: number
-  freeFunds: number
-  monthBalanceChange: number
+  financesManual: boolean
   transactions: Transaction[]
   tasks: Task[]
   investments: Investment[]
@@ -45,6 +43,10 @@ interface AppState {
   initUser: () => void
   completeOnboarding: () => void
   setTheme: (theme: 'dark' | 'light') => void
+  setManualFinances: (values: FinancialSnapshot) => void
+  resetFinancialCounters: () => void
+  resetDemoData: () => void
+  syncFinancesFromData: () => void
   addTransaction: (data: Omit<Transaction, 'id'>) => void
   toggleTask: (id: string) => void
   addTask: (task: Omit<Task, 'id'>) => void
@@ -78,12 +80,13 @@ export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
       user: null,
+      financesManual: false,
       balance: INITIAL_BALANCE,
       income: INITIAL_INCOME,
       expenses: INITIAL_EXPENSES,
       investmentsValue: INITIAL_INVESTMENTS_VALUE,
       freeFunds: INITIAL_FREE_FUNDS,
-      monthBalanceChange: 12450,
+      monthBalanceChange: 12_450,
       transactions: initialTransactions,
       tasks: initialTasks,
       investments: initialInvestments,
@@ -109,10 +112,38 @@ export const useAppStore = create<AppState>()(
         set({ theme })
       },
 
+      setManualFinances: (values) =>
+        set({
+          ...values,
+          financesManual: true,
+        }),
+
+      resetFinancialCounters: () =>
+        set({
+          ...EMPTY_FINANCES,
+          financesManual: true,
+        }),
+
+      resetDemoData: () =>
+        set({
+          transactions: [],
+          tasks: [],
+          investments: [],
+          chatMessages: [],
+          productivityStats: EMPTY_PRODUCTIVITY_STATS,
+          ...EMPTY_FINANCES,
+          financesManual: true,
+        }),
+
+      syncFinancesFromData: () => {
+        set({ financesManual: false })
+        get().recalcFinances()
+      },
+
       addTransaction: (data) => {
         const tx: Transaction = { ...data, id: generateId() }
         set((s) => ({ transactions: [tx, ...s.transactions] }))
-        get().recalcFinances()
+        if (!get().financesManual) get().recalcFinances()
       },
 
       toggleTask: (id) => {
@@ -145,8 +176,11 @@ export const useAppStore = create<AppState>()(
         set((s) => ({
           investments: [...s.investments, { ...inv, id: generateId() }],
         }))
-        const value = calcPortfolioValue(get().investments)
-        set({ investmentsValue: value })
+        if (!get().financesManual) {
+          const value = calcPortfolioValue(get().investments)
+          set({ investmentsValue: value })
+          get().recalcFinances()
+        }
       },
 
       addChatMessage: (role, content) =>
@@ -158,6 +192,8 @@ export const useAppStore = create<AppState>()(
         })),
 
       recalcFinances: () => {
+        if (get().financesManual) return
+
         const { transactions, investments } = get()
         const income = transactions
           .filter((t) => t.type === 'income')
@@ -180,6 +216,7 @@ export const useAppStore = create<AppState>()(
       name: 'finpro-boost-storage',
       partialize: (state) => ({
         user: state.user,
+        financesManual: state.financesManual,
         balance: state.balance,
         income: state.income,
         expenses: state.expenses,

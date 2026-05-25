@@ -77,6 +77,15 @@ export interface ChatMessage {
 
 export type AppTab = 'dashboard' | 'transactions' | 'productivity' | 'investments' | 'ai'
 
+export interface FinancialSnapshot {
+  balance: number
+  income: number
+  expenses: number
+  investmentsValue: number
+  freeFunds: number
+  monthBalanceChange: number
+}
+
 export interface CategoryMeta {
   id: TransactionCategory
   label: string

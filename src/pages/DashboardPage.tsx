@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { motion } from 'framer-motion'
 import {
   TrendingUp,
@@ -7,6 +8,7 @@ import {
   Share2,
   Sparkles,
   CheckCircle2,
+  Settings,
 } from 'lucide-react'
 import {
   AreaChart,
@@ -26,8 +28,10 @@ import { formatCurrency } from '@/lib/utils'
 import { balanceHistory, expenseDistribution, MONTH_BALANCE_CHANGE_PERCENT } from '@/lib/mockData'
 import { shareApp, haptic } from '@/lib/telegram'
 import { generateAdvisorResponse } from '@/features/ai-advisor/advisorLogic'
+import { FinanceSettingsModal } from '@/features/profile/FinanceSettingsModal'
 
 export function DashboardPage() {
+  const [settingsOpen, setSettingsOpen] = useState(false)
   const balance = useAppStore((s) => s.balance)
   const income = useAppStore((s) => s.income)
   const expenses = useAppStore((s) => s.expenses)
@@ -52,17 +56,33 @@ export function DashboardPage() {
           <p className="text-sm text-tg-hint">Привет, {user?.firstName ?? 'друг'} 👋</p>
           <h1 className="text-xl font-bold">FinPro Boost</h1>
         </div>
-        <button
-          type="button"
-          onClick={() => {
-            haptic('light')
-            shareApp('Попробуй FinPro Boost — умный финансовый помощник в Telegram!')
-          }}
-          className="p-3 rounded-xl bg-surface-card border border-white/10"
-        >
-          <Share2 size={20} />
-        </button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              haptic('light')
+              setSettingsOpen(true)
+            }}
+            className="p-3 rounded-xl bg-surface-card border border-white/10"
+            aria-label="Настройки финансов"
+          >
+            <Settings size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              haptic('light')
+              shareApp('Попробуй FinPro Boost — умный финансовый помощник в Telegram!')
+            }}
+            className="p-3 rounded-xl bg-surface-card border border-white/10"
+            aria-label="Поделиться"
+          >
+            <Share2 size={20} />
+          </button>
+        </div>
       </header>
+
+      <FinanceSettingsModal open={settingsOpen} onClose={() => setSettingsOpen(false)} />
 
       <Card glow className="!p-5">
         <p className="text-sm text-tg-hint mb-1">Общий баланс</p>
