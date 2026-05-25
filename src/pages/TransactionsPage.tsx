@@ -10,7 +10,6 @@ import { TransactionForm } from '@/features/transactions/TransactionForm'
 import { CategoryIcon } from '@/components/common/CategoryIcon'
 import { filterTransactions, formatCurrency, formatDateShort, getCategoryLabel } from '@/lib/utils'
 import type { TransactionCategory } from '@/types'
-import { CATEGORY_META } from '@/types'
 import { haptic } from '@/lib/telegram'
 
 type Filter = 'all' | 'income' | 'expense' | TransactionCategory
