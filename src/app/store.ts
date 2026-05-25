@@ -25,7 +25,7 @@ import {
   EMPTY_FINANCES,
   EMPTY_PRODUCTIVITY_STATS,
 } from '@/lib/mockData'
-import { generateId, calcPortfolioValue } from '@/lib/utils'
+import { generateId, calcPortfolioValue, isTaskForPeriod } from '@/lib/utils'
 import { getTelegramUser } from '@/lib/telegram'
 
 interface AppState extends FinancialSnapshot {
@@ -169,8 +169,24 @@ export const useAppStore = create<AppState>()(
         })
       },
 
-      addTask: (task) =>
-        set((s) => ({ tasks: [...s.tasks, { ...task, id: generateId() }] })),
+      addTask: (task) => {
+        const newTask = { ...task, id: generateId() }
+        set((s) => {
+          const tasks = [...s.tasks, newTask]
+          const dayTasks = tasks.filter((t) => isTaskForPeriod(t, 'day'))
+          return {
+            tasks,
+            productivityStats: {
+              ...s.productivityStats,
+              completedToday: dayTasks.filter((t) => t.completed).length,
+              totalToday: dayTasks.length,
+              financialImpactToday: dayTasks
+                .filter((t) => t.completed && t.financialEffect)
+                .reduce((sum, t) => sum + (t.financialEffect?.amount ?? 0), 0),
+            },
+          }
+        })
+      },
 
       addInvestment: (inv) => {
         set((s) => ({
